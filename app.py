@@ -2,7 +2,7 @@
 app.py
 Streamlit web dashboard for the DFT-Insight Agent.
 Supports single-file inspection, batch conformer ranking with Boltzmann ensembles,
-energy window filtering, and advanced machine learning analytics.
+energy window filtering, advanced machine learning analytics, and TD-DFT photophysics.
 """
 
 import os
@@ -28,7 +28,8 @@ app_mode = st.sidebar.selectbox(
     [
         "Single File Inspector", 
         "Batch Conformer Ranking & Boltzmann Analysis", 
-        "Batch Cheminformatics & ML Insights"
+        "Batch Cheminformatics & ML Insights",
+        "TD-DFT UV-Vis & Excited State Inspector"
     ]
 )
 
@@ -79,8 +80,6 @@ if app_mode == "Single File Inspector":
 # ---------------------------------------------------------
 # MODE 2: BATCH CONFORMER RANKING & BOLTZMANN ANALYSIS
 # ---------------------------------------------------------
-# Inside MODE 2 of app.py:
-
 elif app_mode == "Batch Conformer Ranking & Boltzmann Analysis":
     st.header("📊 Batch Conformer Energy Ranking & Boltzmann Ensemble Analysis")
     st.markdown("Upload multiple Gaussian log files to filter by energy window, rank conformers, and compute Boltzmann population-weighted averages.")
@@ -275,3 +274,67 @@ elif app_mode == "Batch Cheminformatics & ML Insights":
             st.markdown("### 📋 Unsupervised Clustering Assignment Table")
             df_clusters = pd.DataFrame(report["clustering_analysis"]["clusters"])
             st.dataframe(df_clusters, use_container_width=True)
+
+# ---------------------------------------------------------
+# MODE 4: TD-DFT UV-VIS & EXCITED STATE INSPECTOR
+# ---------------------------------------------------------
+elif app_mode == "TD-DFT UV-Vis & Excited State Inspector":
+    st.header("🔬 TD-DFT Photophysics & Simulated UV-Vis Spectra")
+    st.markdown("Upload a TD-DFT Gaussian log file to simulate its UV-Vis absorption spectrum, view orbital transition characters, and check for charge-transfer states.")
+    
+    uploaded_tddft_file = st.file_uploader("Upload Gaussian TD-DFT log file", type=["log", "out"], key="tddft_uploader")
+    
+    if uploaded_tddft_file is not None:
+        temp_path = os.path.join("sample_logs", uploaded_tddft_file.name)
+        with open(temp_path, "wb") as f:
+            f.write(uploaded_tddft_file.getbuffer())
+            
+        res = parse_gaussian_log(temp_path)
+        
+        if res.get("has_tddft"):
+            st.success(f"✅ Successfully parsed TD-DFT data for {res['file_name']}")
+            
+            # Metrics display
+            col1, col2, col3 = st.columns(3)
+            col1.metric("λ_max (Absorption Peak)", f"{res['lambda_max_nm']:.1f} nm" if res.get('lambda_max_nm') else "N/A")
+            col2.metric("Max Oscillator Strength (f)", f"{res['max_oscillation_strength']:.4f}" if res.get('max_oscillation_strength') else "N/A")
+            col3.metric("Total States Computed", len(res.get('transitions', [])))
+            
+            # Charge-Transfer Warning
+            from tddft import get_charge_transfer_warning
+            has_ct, ct_warning = get_charge_transfer_warning(res.get('transitions_breakdown', []))
+            if has_ct:
+                st.warning(ct_warning)
+                
+            # Simulated UV-Vis Spectrum Plot
+            st.markdown("### 📈 Simulated UV-Vis Absorption Spectrum")
+            sigma = st.slider("Gaussian Broadening Width (σ in eV)", min_value=0.1, max_value=0.6, value=0.3, step=0.05)
+            
+            from tddft import compute_uv_vis_spectrum
+            df_spec = compute_uv_vis_spectrum(res.get('transitions', []), sigma_ev=sigma)
+            
+            if not df_spec.empty:
+                fig_uv = px.line(
+                    df_spec,
+                    x="Wavelength_nm",
+                    y="Normalized_Absorbance",
+                    labels={"Wavelength_nm": "Wavelength (nm)", "Normalized_Absorbance": "Normalized Absorbance (a.u.)"},
+                    title=f"Simulated UV-Vis Spectrum (σ = {sigma} eV)"
+                )
+                st.plotly_chart(fig_uv, use_container_width=True)
+                
+            # Orbital Transitions Table
+            st.markdown("### 📋 Excited State Orbital Transition Breakdown")
+            flat_transitions = []
+            for tb in res.get('transitions_breakdown', []):
+                for dom in tb.get('dominant_transitions', []):
+                    flat_transitions.append({
+                        "State": tb.get('state'),
+                        "Character": tb.get('character_type'),
+                        "Transition": f"{dom.get('from_label')} → {dom.get('to_label')}",
+                        "Contribution (%)": dom.get('weight_percent')
+                    })
+            if flat_transitions:
+                st.dataframe(pd.DataFrame(flat_transitions), use_container_width=True)
+        else:
+            st.warning("⚠️ The uploaded log file does not contain valid TD-DFT excitation energy data. Ensure your calculation includes `td=(...)` keywords.")

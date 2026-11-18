@@ -2,7 +2,7 @@
 parser_core.py
 Core chemistry logic and parsing engine using cclib, numpy, pandas, scipy, and scikit-learn.
 Handles Gaussian .log/.out extraction, thermochemistry, frequency checks, 
-conformer Boltzmann weighting, automated error diagnostics, and advanced batch cheminformatics analytics.
+conformer Boltzmann weighting, automated error diagnostics, TD-DFT photophysics, and advanced batch cheminformatics analytics.
 """
 
 import os
@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 import cclib
 import scipy.stats as stats
+from tddft import parse_uv_vis_data, analyze_orbital_transitions
+from boltzmann_core import process_conformer_ensemble
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
@@ -86,7 +88,7 @@ def diagnose_gaussian_error(file_path: str) -> dict:
 def parse_gaussian_log(file_path: str) -> dict:
     """
     Parses a single Gaussian output file using cclib and extracts 
-    energies, HOMO/LUMO, dipole moments, and vibrational frequencies.
+    energies, HOMO/LUMO, dipole moments, vibrational frequencies, and TD-DFT properties.
     """
     # 1. Check if the job crashed before trying to parse properties
     diag = diagnose_gaussian_error(file_path)
@@ -147,6 +149,10 @@ def parse_gaussian_log(file_path: str) -> dict:
             else:
                 freq_status = f"FAIL: Higher-Order Saddle Point ({imaginary_count} imaginary freqs)"
 
+        # 7. TD-DFT Photophysics Extraction
+        tddft_summary = parse_uv_vis_data(data)
+        transitions_breakdown = analyze_orbital_transitions(data) if tddft_summary["has_tddft"] else []
+
         return {
             "file_name": os.path.basename(file_path),
             "status": "SUCCESS",
@@ -159,7 +165,12 @@ def parse_gaussian_log(file_path: str) -> dict:
             "homo_lumo_gap_ev": gap_ev,
             "dipole_moment_debye": total_dipole,
             "frequency_status": freq_status,
-            "imaginary_freq_count": imaginary_count
+            "imaginary_freq_count": imaginary_count,
+            "has_tddft": tddft_summary["has_tddft"],
+            "lambda_max_nm": tddft_summary.get("lambda_max_nm"),
+            "max_oscillation_strength": tddft_summary.get("max_oscillator_strength"),
+            "transitions": tddft_summary.get("transitions", []),
+            "transitions_breakdown": transitions_breakdown
         }
 
     except Exception as e:
@@ -170,46 +181,13 @@ def parse_gaussian_log(file_path: str) -> dict:
         }
 
 
-def rank_conformers(file_paths: list, temperature: float = DEFAULT_TEMP) -> pd.DataFrame:
+def rank_conformers(file_paths: list, temperature: float = DEFAULT_TEMP, energy_window_kcal: float = 3.0) -> tuple:
     """
-    Parses a batch of conformer log files, computes relative Gibbs free energies (ΔG),
-    Boltzmann populations at given temperature, and returns a sorted pandas DataFrame.
+    Parses a batch of conformer log files and delegates ensemble statistical mechanics 
+    to boltzmann_core.py.
     """
-    results = []
-    for path in file_paths:
-        res = parse_gaussian_log(path)
-        if res.get("status") == "SUCCESS" and res.get("free_energy_hartree") is not None:
-            results.append(res)
-        else:
-            results.append({
-                **res,
-                "free_energy_hartree": float('inf')
-            })
-
-    df = pd.DataFrame(results)
-    valid_df = df[df["free_energy_hartree"] != float('inf')].copy()
-    
-    if valid_df.empty:
-        return df
-
-    # Find global minimum Gibbs Free Energy
-    g_min = valid_df["free_energy_hartree"].min()
-
-    # Calculate ΔG in kcal/mol: ΔG = (G_i - G_min) * 627.509474
-    valid_df["delta_g_kcal_mol"] = (valid_df["free_energy_hartree"] - g_min) * HARTREE_TO_KCAL_MOL
-
-    # Calculate Boltzmann factor: exp(-ΔG / RT)
-    rt = KB * temperature  # RT in kcal/mol
-    valid_df["boltzmann_factor"] = np.exp(-valid_df["delta_g_kcal_mol"] / rt)
-
-    # Calculate percentage population weight
-    total_bf = valid_df["boltzmann_factor"].sum()
-    valid_df["population_percent"] = (valid_df["boltzmann_factor"] / total_bf) * 100.0
-
-    # Sort ascending by ΔG (most stable conformation first)
-    valid_df = valid_df.sort_values(by="delta_g_kcal_mol", ascending=True).reset_index(drop=True)
-
-    return valid_df
+    results = [parse_gaussian_log(path) for path in file_paths]
+    return process_conformer_ensemble(results, temperature=temperature, energy_window_kcal=energy_window_kcal)
 
 
 def run_batch_cheminformatics_report(file_paths: list, n_clusters: int = 2) -> dict:
@@ -296,12 +274,3 @@ def run_batch_cheminformatics_report(file_paths: list, n_clusters: int = 2) -> d
             "clusters": successful_df[["file_name", "cluster_id", "homo_lumo_gap_ev", "dipole_moment_debye"]].to_dict(orient="records")
         }
     }
-from boltzmann_core import process_conformer_ensemble
-
-def rank_conformers(file_paths: list, temperature: float = DEFAULT_TEMP, energy_window_kcal: float = 3.0) -> tuple:
-    """
-    Parses a batch of conformer log files and delegates ensemble statistical mechanics 
-    to boltzmann_core.py.
-    """
-    results = [parse_gaussian_log(path) for path in file_paths]
-    return process_conformer_ensemble(results, temperature=temperature, energy_window_kcal=energy_window_kcal)

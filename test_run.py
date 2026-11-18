@@ -1,8 +1,8 @@
 """
 test_run.py
 Scans sample_logs, processes every available log file regardless of count,
-prints individual details, generates a unified summary table, 
-and executes the new advanced cheminformatics machine learning report.
+prints individual details (including TD-DFT photophysics), generates a unified summary table, 
+and executes the advanced cheminformatics machine learning report.
 """
 
 import os
@@ -29,14 +29,18 @@ def run_tests():
 
     print(f"📁 Found {len(file_paths)} log file(s) in '{target_dir}'. Running analysis on all...\n")
 
-    # 1. Print detailed property breakdown for every file
+    # 1. Print detailed property breakdown for every file (including TD-DFT check)
     for path in file_paths:
         print("=" * 60)
         print(f"📄 Detailed Breakdown for: {os.path.basename(path)}")
         print("=" * 60)
         result = parse_gaussian_log(path)
         for key, value in result.items():
-            print(f"  {key}: {value}")
+            # Keep transitions breakdown compact for terminal readability if present
+            if key == "transitions_breakdown" and value:
+                print(f"  {key}: [{len(value)} excited states computed]")
+            else:
+                print(f"  {key}: {value}")
         print("\n")
 
     # 2. Generate unified summary & ranking table for all files
@@ -45,13 +49,13 @@ def run_tests():
     print("=" * 60)
     df_ranked, ensemble_averages = rank_conformers(file_paths)
     
-    cols_to_show = ["file_name", "status", "scf_energy_hartree", "delta_g_kcal_mol", "population_percent", "homo_lumo_gap_ev", "frequency_status"]
+    cols_to_show = ["file_name", "status", "scf_energy_hartree", "delta_g_kcal_mol", "population_percent", "homo_lumo_gap_ev", "frequency_status", "lambda_max_nm"]
     available_cols = [c for c in cols_to_show if c in df_ranked.columns]
     
     print(df_ranked[available_cols].to_string(index=False))
     print("\n")
 
-    # 3. Run and print the new Advanced Cheminformatics Batch Report (PCA, Clustering, Outliers, Correlation)
+    # 3. Run and print the Advanced Cheminformatics Batch Report (PCA, Clustering, Outliers, Correlation)
     print("=" * 60)
     print("🧪 Advanced Cheminformatics Batch Report (ML & Statistics):")
     print("=" * 60)
