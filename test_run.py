@@ -43,7 +43,7 @@ def run_tests():
     print("=" * 60)
     print("📊 Unified Summary & Conformer Ranking Table:")
     print("=" * 60)
-    df_ranked = rank_conformers(file_paths)
+    df_ranked, ensemble_averages = rank_conformers(file_paths)
     
     cols_to_show = ["file_name", "status", "scf_energy_hartree", "delta_g_kcal_mol", "population_percent", "homo_lumo_gap_ev", "frequency_status"]
     available_cols = [c for c in cols_to_show if c in df_ranked.columns]

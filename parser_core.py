@@ -296,3 +296,12 @@ def run_batch_cheminformatics_report(file_paths: list, n_clusters: int = 2) -> d
             "clusters": successful_df[["file_name", "cluster_id", "homo_lumo_gap_ev", "dipole_moment_debye"]].to_dict(orient="records")
         }
     }
+from boltzmann_core import process_conformer_ensemble
+
+def rank_conformers(file_paths: list, temperature: float = DEFAULT_TEMP, energy_window_kcal: float = 3.0) -> tuple:
+    """
+    Parses a batch of conformer log files and delegates ensemble statistical mechanics 
+    to boltzmann_core.py.
+    """
+    results = [parse_gaussian_log(path) for path in file_paths]
+    return process_conformer_ensemble(results, temperature=temperature, energy_window_kcal=energy_window_kcal)

@@ -1,8 +1,8 @@
 """
 app.py
 Streamlit web dashboard for the DFT-Insight Agent.
-Supports both single-file inspection and multi-file batch uploads for 
-conformer ranking, comparisons, and machine learning analytics.
+Supports single-file inspection, batch conformer ranking with Boltzmann ensembles,
+energy window filtering, and advanced machine learning analytics.
 """
 
 import os
@@ -27,7 +27,7 @@ app_mode = st.sidebar.selectbox(
     "Choose Analysis Mode", 
     [
         "Single File Inspector", 
-        "Batch Conformer Ranking & Comparison", 
+        "Batch Conformer Ranking & Boltzmann Analysis", 
         "Batch Cheminformatics & ML Insights"
     ]
 )
@@ -77,11 +77,19 @@ if app_mode == "Single File Inspector":
             st.dataframe(df_res, use_container_width=True)
 
 # ---------------------------------------------------------
-# MODE 2: BATCH CONFORMER RANKING & COMPARISON
+# MODE 2: BATCH CONFORMER RANKING & BOLTZMANN ANALYSIS
 # ---------------------------------------------------------
-elif app_mode == "Batch Conformer Ranking & Comparison":
-    st.header("📊 Batch Conformer Energy Ranking & Boltzmann Analysis")
-    st.markdown("Upload multiple Gaussian log files simultaneously to rank conformers and calculate Boltzmann weights.")
+# Inside MODE 2 of app.py:
+
+elif app_mode == "Batch Conformer Ranking & Boltzmann Analysis":
+    st.header("📊 Batch Conformer Energy Ranking & Boltzmann Ensemble Analysis")
+    st.markdown("Upload multiple Gaussian log files to filter by energy window, rank conformers, and compute Boltzmann population-weighted averages.")
+    
+    # Sidebar controls for Boltzmann analysis
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Boltzmann & Ensemble Settings")
+    temperature = st.sidebar.number_input("Temperature (K)", min_value=100.0, max_value=500.0, value=298.15, step=5.0)
+    energy_window = st.sidebar.slider("Energy Window (kcal/mol)", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
     
     uploaded_files = st.file_uploader(
         "Upload multiple Gaussian .log files", 
@@ -98,16 +106,46 @@ elif app_mode == "Batch Conformer Ranking & Comparison":
                 f.write(uf.getbuffer())
             temp_paths.append(t_path)
             
-        st.info(f"📁 Successfully loaded {len(temp_paths)} file(s) for ranking.")
+        st.info(f"📁 Successfully loaded {len(temp_paths)} file(s) for ensemble analysis.")
         
-        # Run batch ranking
-        df_ranked = rank_conformers(temp_paths)
+        # --- FEATURE #5: Scientific Sensitivity & DFT Warning Banner ---
+        st.warning(
+            "⚠️ **Scientific Caveat & DFT Sensitivity Warning:** "
+            "At 298.15 K, a $\Delta G$ difference of **1.36 kcal/mol** translates to approximately a **10-fold shift** in population ratio. "
+            "Standard Density Functional Theory (DFT) methods have intrinsic error bars of ~1 kcal/mol. Treat population percentages as qualitative thermodynamic trends rather than absolute ground truths."
+        )
         
-        st.markdown("### Ranked Conformer Comparison Table")
+        # Optional Degeneracy Inputs
+        with st.expander("⚙️ Advanced: Conformer Degeneracy / Symmetry Multiplicities"):
+            st.markdown("Specify symmetry numbers or chiral multiplicities (e.g., enantiomeric pairs = 2) for specific log files:")
+            deg_map = {}
+            for uf in uploaded_files:
+                deg_map[uf.name] = st.number_input(f"Multiplicity for {uf.name}", min_value=1, max_value=10, value=1, key=f"deg_{uf.name}")
+
+        # Run batch ranking and temperature scan
+        from boltzmann_core import process_conformer_ensemble, calculate_temperature_scan
+        
+        raw_results = [parse_gaussian_log(p) for p in temp_paths]
+        df_ranked, ensemble_averages = process_conformer_ensemble(raw_results, temperature=temperature, energy_window_kcal=energy_window, degeneracy_map=deg_map)
+        
+        # --- DISPLAY ENSEMBLE METRICS ---
+        st.markdown("### 🌡️ Population-Weighted Ensemble Averages ($\langle P \rangle$)")
+        st.caption(f"Calculated at {temperature} K across conformers within {energy_window} kcal/mol of the global minimum.")
+        
+        e_col1, e_col2, e_col3 = st.columns(3)
+        avg_gap = ensemble_averages.get("homo_lumo_gap_ev")
+        avg_dipole = ensemble_averages.get("dipole_moment_debye")
+        avg_scf = ensemble_averages.get("scf_energy_hartree")
+        
+        e_col1.metric("⟨HOMO-LUMO Gap⟩", f"{avg_gap:.2f} eV" if avg_gap else "N/A")
+        e_col2.metric("⟨Dipole Moment⟩", f"{avg_dipole:.2f} Debye" if avg_dipole else "N/A")
+        e_col3.metric("⟨SCF Energy⟩", f"{avg_scf:.4f} Ha" if avg_scf else "N/A")
+        
+        st.markdown("### 📋 Filtered & Ranked Conformer Table")
         st.dataframe(df_ranked, use_container_width=True)
         
         st.markdown("### 📈 Interactive Visual Insights")
-        valid_df = df_ranked[df_ranked["free_energy_hartree"] != float('inf')].copy()
+        valid_df = df_ranked[df_ranked["delta_g_kcal_mol"] != float('inf')].copy()
         
         if not valid_df.empty:
             col_g1, col_g2 = st.columns(2)
@@ -133,11 +171,28 @@ elif app_mode == "Batch Conformer Ranking & Comparison":
                     names="file_name", 
                     values="population_percent",
                     hole=0.4,
-                    title="Room Temperature Equilibrium Distribution"
+                    title=f"Equilibrium Distribution at {temperature} K"
                 )
                 st.plotly_chart(fig_pop, use_container_width=True)
+                
+            # --- FEATURE #2: Temperature Scan Plotly Line Chart ---
+            st.markdown("### 🌡️ Conformer Population Shift Across Temperature (200K – 450K)")
+            st.markdown("Observe how conformational equilibrium shifts under variable thermal energy (useful for variable-temperature NMR studies).")
+            
+            df_scan = calculate_temperature_scan(raw_results, temp_range=range(200, 451, 10))
+            if not df_scan.empty:
+                fig_scan = px.line(
+                    df_scan,
+                    x="Temperature_K",
+                    y="population_percent",
+                    color="file_name",
+                    markers=True,
+                    labels={"Temperature_K": "Temperature (K)", "population_percent": "Population Weight (%)", "file_name": "Conformer"},
+                    title="Population Equilibrium vs. Temperature Scan"
+                )
+                st.plotly_chart(fig_scan, use_container_width=True)
         else:
-            st.warning("Thermochemistry data (Gibbs Free Energy) required in log files to generate energy graphs.")
+            st.warning("Thermochemistry data required to generate energy graphs and temperature scans.")
 
 # ---------------------------------------------------------
 # MODE 3: BATCH CHEMINFORMATICS & ML INSIGHTS
