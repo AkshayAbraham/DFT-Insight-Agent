@@ -1,0 +1,13 @@
+{
+    "servers": {
+        "dft-insight-agent": {
+            "type": "stdio",
+            "command": "C:\\claude worker\\venv\\Scripts\\python.exe",
+            "args": [
+                "C:\\claude worker\\mcp_server.py"
+            ]
+        }
+    },
+    "inputs": []
+}
+

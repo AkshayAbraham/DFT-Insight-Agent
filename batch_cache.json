@@ -1,0 +1,183 @@
+{
+    "batch_summary": {
+        "total_files_evaluated": 7,
+        "successful_jobs": 7,
+        "failed_jobs": 0
+    },
+    "source_dataset": [
+        {
+            "file_name": "CO_TD_delta.log",
+            "homo_lumo_gap_ev": 9.979775467087501,
+            "dipole_moment_debye": 0.093,
+            "scf_energy_hartree": -113.2171295563797
+        },
+        {
+            "file_name": "dvb_nmr.log",
+            "homo_lumo_gap_ev": 5.1840409658755,
+            "dipole_moment_debye": 0.0,
+            "scf_energy_hartree": -382.3082284349095
+        },
+        {
+            "file_name": "dvb_un_sp_b.log",
+            "homo_lumo_gap_ev": 5.231660889713,
+            "dipole_moment_debye": NaN,
+            "scf_energy_hartree": -382.0813790268293
+        },
+        {
+            "file_name": "Mo4OCl4-sp.log.log",
+            "homo_lumo_gap_ev": 3.110261311214999,
+            "dipole_moment_debye": 1.0673000046847183,
+            "scf_energy_hartree": -202.7136154978911
+        },
+        {
+            "file_name": "Trp_polar.log",
+            "homo_lumo_gap_ev": 12.8777879749125,
+            "dipole_moment_debye": 2.7110047768309076,
+            "scf_energy_hartree": -673.5905476407027
+        },
+        {
+            "file_name": "water_ccsdt.log",
+            "homo_lumo_gap_ev": 26.094629807548,
+            "dipole_moment_debye": 1.6735,
+            "scf_energy_hartree": -74.96432617415613
+        },
+        {
+            "file_name": "water_mp2.log",
+            "homo_lumo_gap_ev": NaN,
+            "dipole_moment_debye": 1.5994,
+            "scf_energy_hartree": -74.96432617415613
+        }
+    ],
+    "outlier_analysis": {
+        "flagged_outliers": [],
+        "detection_criteria": "Z-score magnitude > 2.5 across quantum descriptors."
+    },
+    "correlation_matrix": {
+        "homo_lumo_gap_ev": {
+            "homo_lumo_gap_ev": 1.0,
+            "dipole_moment_debye": 0.4710970595488666,
+            "scf_energy_hartree": 0.28298632060835127
+        },
+        "dipole_moment_debye": {
+            "homo_lumo_gap_ev": 0.4710970595488666,
+            "dipole_moment_debye": 1.0,
+            "scf_energy_hartree": -0.39807617974963955
+        },
+        "scf_energy_hartree": {
+            "homo_lumo_gap_ev": 0.28298632060835127,
+            "dipole_moment_debye": -0.39807617974963955,
+            "scf_energy_hartree": 1.0
+        }
+    },
+    "pca_analysis": {
+        "explained_variance_ratio": {
+            "PC1": 0.4889,
+            "PC2": 0.4193,
+            "total_percentage": 90.82
+        },
+        "component_loadings": {
+            "homo_lumo_gap_ev": {
+                "PC1": 0.5188,
+                "PC2": 0.6412
+            },
+            "dipole_moment_debye": {
+                "PC1": 0.7767,
+                "PC2": -0.0773
+            },
+            "scf_energy_hartree": {
+                "PC1": -0.3571,
+                "PC2": 0.7635
+            }
+        },
+        "coordinates": [
+            {
+                "file_name": "CO_TD_delta.log",
+                "pca_pc1": -1.2836714618298373,
+                "pca_pc2": 0.6505439922090922,
+                "cluster_id": 1
+            },
+            {
+                "file_name": "dvb_nmr.log",
+                "pca_pc1": -1.2439280908558654,
+                "pca_pc2": -0.7740072674459191,
+                "cluster_id": 1
+            },
+            {
+                "file_name": "dvb_un_sp_b.log",
+                "pca_pc1": -0.18291977000273218,
+                "pca_pc2": -0.8741865968878209,
+                "cluster_id": 1
+            },
+            {
+                "file_name": "Mo4OCl4-sp.log.log",
+                "pca_pc1": -0.7590492610884433,
+                "pca_pc2": -0.3839170851884749,
+                "cluster_id": 1
+            },
+            {
+                "file_name": "Trp_polar.log",
+                "pca_pc1": 2.229904736477607,
+                "pca_pc2": -1.4121360547792032,
+                "cluster_id": 0
+            },
+            {
+                "file_name": "water_ccsdt.log",
+                "pca_pc1": 1.2202554900993,
+                "pca_pc2": 2.094908674135033,
+                "cluster_id": 1
+            },
+            {
+                "file_name": "water_mp2.log",
+                "pca_pc1": 0.019408357199970885,
+                "pca_pc2": 0.6987943379572925,
+                "cluster_id": 1
+            }
+        ]
+    },
+    "clustering_analysis": {
+        "clusters": [
+            {
+                "file_name": "CO_TD_delta.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": 9.979775467087501,
+                "dipole_moment_debye": 0.093
+            },
+            {
+                "file_name": "dvb_nmr.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": 5.1840409658755,
+                "dipole_moment_debye": 0.0
+            },
+            {
+                "file_name": "dvb_un_sp_b.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": 5.231660889713,
+                "dipole_moment_debye": NaN
+            },
+            {
+                "file_name": "Mo4OCl4-sp.log.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": 3.110261311214999,
+                "dipole_moment_debye": 1.0673000046847183
+            },
+            {
+                "file_name": "Trp_polar.log",
+                "cluster_id": 0,
+                "homo_lumo_gap_ev": 12.8777879749125,
+                "dipole_moment_debye": 2.7110047768309076
+            },
+            {
+                "file_name": "water_ccsdt.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": 26.094629807548,
+                "dipole_moment_debye": 1.6735
+            },
+            {
+                "file_name": "water_mp2.log",
+                "cluster_id": 1,
+                "homo_lumo_gap_ev": NaN,
+                "dipole_moment_debye": 1.5994
+            }
+        ]
+    }
+}
