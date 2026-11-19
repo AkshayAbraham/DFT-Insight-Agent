@@ -168,34 +168,35 @@ The project consists of three main components.
                        |
                        v
               Core Analysis Engine
-                (parser_core.py)
+             (parser_core.py)
+            
                        |
-          +------------+------------+
-          |            |            |
-          v            v            v
-      Individual    Conformer    Batch ML &
-      Analysis      Analysis     Cheminformatics
-          |            |            |
-          v            v            v
-       Molecular    Energy &     PCA, Clustering,
-       Properties   Boltzmann    Correlation &
-                    Analysis     Outlier Detection
-          |            |            |
-          +------------+------------+
+     +-----------------+-----------------+-----------------+
+     |                 |                 |                 |
+     v                 v                 v                 v
+Individual        Conformer         Batch ML &         TD-DFT &
+ Analysis          Analysis       Cheminformatics    Photophysics
+     |                 |                 |                 |
+     v                 v                 v                 v
+Molecular        Energy, ΔG &     PCA, Clustering,   UV-Vis Spectrum,
+Properties        Boltzmann &      Correlation &     Orbital Transitions
+                  Temp. Scan      Outlier Detection   & CT / QC Checks
+     |                 |                 |                 |
+     +-----------------+-----------------+-----------------+
                        |
                        v
               Results & Visualisation
 
 
-        Compatible AI Client (e.g. Claude Desktop)
+  Compatible AI Client (e.g. Claude Desktop / Copilot)
                        |
                        v
                   MCP Server
-                (mcp_server.py)
+               (mcp_server.py)
                        |
                        v
               Core Analysis Engine
-                (parser_core.py)
+             (parser_core.py)
 ```
 
 The dashboard and MCP server provide separate interfaces to the shared analytical code. The MCP server accesses Gaussian files through its configured filesystem paths.
@@ -376,24 +377,24 @@ The correlation heatmap helps explore relationships between the selected molecul
 
 ### TD-DFT UV-Vis and Excited State Analysis
 
-For calculations containing time-dependent density functional theory (`TD-DFT`) output, the photophysics module extracts electronic excitation energies and oscillator strengths to model optical behavior[cite: 8, 13].
+For calculations containing time-dependent density functional theory (`TD-DFT`) output, the photophysics module extracts electronic excitation energies and oscillator strengths to model optical behavior.
 
 **Key outputs displayed:**
 
 | Property / Feature | Description |
 |---|---|
-| $\lambda_{\max}$ (Absorption Peak) | Wavelength (in nm) corresponding to the strongest allowed electronic transition in the optical range ($\ge 150\text{ nm}$)[cite: 8, 13] |
-| Max Oscillator Strength ($f$) | Dimensionless intensity of the dominant electronic transition[cite: 8, 13] |
-| Simulated UV-Vis Spectrum | Continuous absorption curve (200–800 nm) generated via Gaussian broadening with adjustable bandwidth ($\sigma$ in eV)[cite: 8, 13] |
-| Orbital Transition Breakdown | Dominant molecular orbital excitations (e.g., $\text{HOMO} \to \text{LUMO}$) with percentage contributions ($\ge 5\%$)[cite: 8, 12] |
-| Transition Character & CT Check | Classifies states (valence $\pi \to \pi^*$, Rydberg-like, or charge-transfer) and flags long-range charge-transfer states that may be underestimated by standard hybrid functionals[cite: 8, 12] |
+| $\lambda_{\max}$ (Absorption Peak) | Wavelength (in nm) corresponding to the strongest allowed electronic transition in the optical range ($\ge 150\text{ nm}$) |
+| Max Oscillator Strength ($f$) | Dimensionless intensity of the dominant electronic transition|
+| Simulated UV-Vis Spectrum | Continuous absorption curve (200–800 nm) generated via Gaussian broadening with adjustable bandwidth ($\sigma$ in eV) |
+| Orbital Transition Breakdown | Dominant molecular orbital excitations (e.g., $\text{HOMO} \to \text{LUMO}$) with percentage contributions ($\ge 5\%$) |
+| Transition Character & CT Check | Classifies states (valence $\pi \to \pi^*$, Rydberg-like, or charge-transfer) and flags long-range charge-transfer states that may be underestimated by standard hybrid functionals |
 
 ### Automated Error Diagnostics and Quality Control
 
-When evaluating incomplete or failed Gaussian jobs, the diagnostic engine inspects the calculation footer and excited-state metadata to identify common computational bottlenecks[cite: 10, 14]:
+When evaluating incomplete or failed Gaussian jobs, the diagnostic engine inspects the calculation footer and excited-state metadata to identify common computational bottlenecks
 
-- **Failure Root-Cause Detection:** Automatically flags SCF convergence failures, geometry optimization step limits, internal coordinate issues (`FormBX`), and memory/disk terminations (`Lnk1e`), pairing each with a suggested Gaussian route fix[cite: 8, 10].
-- **TD-DFT Validation Checks:** Verifies whether sufficient excited states were computed to cover the visible optical region and checks batch series for consistent state counts across molecules[cite: 14].
+- **Failure Root-Cause Detection:** Automatically flags SCF convergence failures, geometry optimization step limits, internal coordinate issues (`FormBX`), and memory/disk terminations (`Lnk1e`), pairing each with a suggested Gaussian route fix.
+- **TD-DFT Validation Checks:** Verifies whether sufficient excited states were computed to cover the visible optical region and checks batch series for consistent state counts across molecules.
 
 ### Live Streamlit App: 
 **[https://dft-insight-agent-mjade563h4ugrcsytf8ptk.streamlit.app/](https://dft-insight-agent-mjade563h4ugrcsytf8ptk.streamlit.app/)**
@@ -402,32 +403,30 @@ When evaluating incomplete or failed Gaussian jobs, the diagnostic engine inspec
 
 **Dashboard**
 
-The sample calculations, screenshots, and exported tables shown below are generated from Gaussian log/output files in the `sample_logs/` directory inside this project[cite: 2, 4, 8].
-
-![DFT-Insight Agent Dashboard](assets/screenshots/dashboard.png)
+The sample calculations, screenshots, and exported tables shown below are generated from Gaussian log/output files in the `sample_logs/` directory inside this project.
 
 **Single File Analysis**
 
-![Single File Analysis](assets/screenshots/single-file-analysis.png)
-![Single File Properties (CSV)](assets/tables/extracted_prop_SF.csv)
+![Single File Analysis](assets/screenshots/singleFile.png)
+[Single File Properties (CSV)](assets/tables/extracted_prop_SF.csv)
 
 **Conformer Ranking**
 
 ![Conformer Ranking](assets/screenshots/BatchConformer1.png)
 ![Conformer Ranking](assets/screenshots/BatchConformer2.png)
-![Conformer Ranking (CSV)](assets/tables/RankedConformerTable.csv)
+[Conformer Ranking (CSV)](assets/tables/RankedConformerTable.csv)
 
 **Batch PCA and Machine Learning Analysis**
 
 ![Batch Cheminformatics Analysis](assets/screenshots/cheminformaticsanalysis.png)
 ![Batch Cheminformatics Analysis](assets/screenshots/clustered-chemical-space-pca.png)
 ![Batch Cheminformatics Analysis](assets/screenshots/quantum-property-correlations.png)
-![Batch Cheminformatics Analysis (CSV)](assets/tables/clusteringassignmenttable.csv)
+[Batch Cheminformatics Analysis (CSV)](assets/tables/clusteringassignmenttable.csv)
 
 **TD-DFT Analysis**
 
 ![TD-DFT Analysis](assets/screenshots/uvvis.png)
-![TD-DFT Analysis (csv)](assets/tables/excitedstate.csv)
+[TD-DFT Analysis (CSV)](assets/tables/excitedstate.csv)
 
 ---
 
@@ -451,7 +450,7 @@ Refer to your MCP client's documentation for its server configuration instructio
 
 ### AI Agent & MCP Worker Interaction
 
-The screenshots below demonstrate querying the MCP server tools directly from the workspace assistant using the files in `sample_logs/`[cite: 2, 5]:
+The screenshots below demonstrate querying the MCP server tools directly from the workspace assistant using the files in `sample_logs/`:
 
 | image 1 | image 2 |
 | :---: | :---: |
@@ -475,25 +474,25 @@ The screenshots below demonstrate querying the MCP server tools directly from th
 ```text
 DFT-Insight-Agent/
 │
-├── app.py                 # Streamlit application and dashboard[cite: 8]
+├── app.py                 # Streamlit application and dashboard
 │
-├── parser_core.py         # Core Gaussian parsing and analytical engine[cite: 10]
+├── parser_core.py         # Core Gaussian parsing and analytical engine
 │
-├── boltzmann_core.py      # Conformer Boltzmann ensemble and temperature scan logic[cite: 9]
+├── boltzmann_core.py      # Conformer Boltzmann ensemble and temperature scan logic
 │
 ├── tdft/
-│   ├── __init__.py        # Package exports for UV-Vis and transition helpers[cite: 11]
-│   ├── uv_vis.py          # TD-DFT UV-Vis data parsing and spectrum broadening[cite: 13]
-│   ├── transitions.py     # Molecular orbital transition analysis and CT checks[cite: 12]
-│   └── validation.py      # TD-DFT quality control and batch consistency checks[cite: 14]
+│   ├── __init__.py        # Package exports for UV-Vis and transition helpers
+│   ├── uv_vis.py          # TD-DFT UV-Vis data parsing and spectrum broadening
+│   ├── transitions.py     # Molecular orbital transition analysis and CT checks
+│   └── validation.py      # TD-DFT quality control and batch consistency checks
 │
-├── mcp_server.py          # MCP server and tool definitions[cite: 2, 5]
+├── mcp_server.py          # MCP server and tool definitions
 │
-├── test_run.py            # Local analysis and testing script[cite: 4, 7]
+├── test_run.py            # Local analysis and testing script
 │
-├── requirements.txt       # Python dependencies (if included)
+├── requirements.txt       # Python dependencies 
 │
-├── sample_logs/           # Gaussian output files[cite: 2, 4, 8]
+├── sample_logs/           # Gaussian output files
 │
 ├── assets/
 │   ├── screenshots/       # Application and AI worker screenshots
@@ -533,19 +532,19 @@ Potential directions for extending the project include:
 
 ---
 
-> **⚠️ Prototype & Mixed-Dataset Notice:** This project is currently at a prototype stage and has been tested on a mixed set of different molecules with limited log files containing thermochemistry and TD-DFT outputs[cite: 8, 9, 10, 13]. Because some calculations have missing properties or heterogeneous job types, certain results or comparisons may be incomplete or inaccurate. Further validation and fine-tuning are planned using a larger, well-curated dataset.
+> **⚠️ Prototype & Mixed-Dataset Notice:** This project is currently at a prototype stage and has been tested on a mixed set of different molecules with limited log files containing thermochemistry and TD-DFT outputs. Because some calculations have missing properties or heterogeneous job types, certain results or comparisons may be incomplete or inaccurate. Further validation and fine-tuning are planned using a larger, well-curated dataset.
 
 ---
 
 ## 📚 References & Acknowledgments
 
 ### Libraries, Sample Data & Tools
-- **cclib:** Python library for parsing and interpreting computational chemistry output files, as well as sample log files used during testing (`cclib` repository / sample outputs)[cite: 3, 10, 13].
-- **Scientific Python Stack:** `numpy`, `pandas`, `scipy`, and `scikit-learn` for numerical calculations, data handling, statistical tests, PCA, and clustering[cite: 3, 10].
-- **Streamlit & Model Context Protocol (MCP):** Used for building the interactive dashboard and exposing analysis tools to compatible clients[cite: 2, 8].
+- **cclib:** Python library for parsing and interpreting computational chemistry output files, as well as sample log files used during testing (`cclib` repository / sample outputs).
+- **Scientific Python Stack:** `numpy`, `pandas`, `scipy`, and `scikit-learn` for numerical calculations, data handling, statistical tests, PCA, and clustering.
+- **Streamlit & Model Context Protocol (MCP):** Used for building the interactive dashboard and exposing analysis tools to compatible clients.
 
 ### AI Assistants Used
-- **ChatGPT, Gemini, and Claude:** Used as AI coding and brainstorming assistants during development, debugging, and documentation drafting. (AI-generated suggestions were reviewed alongside project testing and should be verified against primary computational chemistry literature and raw output files[cite: 8, 9, 10, 12].)
+- **ChatGPT, Gemini, and Claude:** Used as AI coding and brainstorming assistants during development, debugging, and documentation drafting. (AI-generated suggestions were reviewed alongside project testing and should be verified against primary computational chemistry literature and raw output files.)
 
 ## 📄 Licence
 
