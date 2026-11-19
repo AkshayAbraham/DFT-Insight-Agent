@@ -1,0 +1,18 @@
+﻿,Property,Value
+0,file_name,dvb_td.log
+1,status,SUCCESS
+2,scf_energy_hartree,-382.2985300772482
+3,zpe_hartree,
+4,enthalpy_hartree,
+5,free_energy_hartree,
+6,homo_ev,-4.4384490155055
+7,lumo_ev,1.4568975555769998
+8,homo_lumo_gap_ev,5.8953465710825
+9,dipole_moment_debye,0.12380767342939614
+10,frequency_status,NOT CHECKED
+11,imaginary_freq_count,0
+12,has_tddft,True
+13,lambda_max_nm,220.27145344395686
+14,max_oscillation_strength,0.0
+15,transitions,"[{'state': 1, 'energy_ev': 5.6287, 'wavelength_nm': 220.27145344395686, 'oscillator_strength': 0.0}, {'state': 2, 'energy_ev': 6.0621, 'wavelength_nm': 204.52350340641033, 'oscillator_strength': 0.0}, {'state': 3, 'energy_ev': 6.4052, 'wavelength_nm': 193.56802754012367, 'oscillator_strength': 0.0}, {'state': 4, 'energy_ev': 6.6688, 'wavelength_nm': 185.91679612523993, 'oscillator_strength': 0.0}, {'state': 5, 'energy_ev': 7.0797, 'wavelength_nm': 175.1263372741783, 'oscillator_strength': 0.0}]"
+16,transitions_breakdown,"[{'state': 1, 'dominant_transitions': [{'from_mo': 33, 'to_mo': 35, 'from_label': 'HOMO-1', 'to_label': 'LUMO', 'weight_percent': 55.3}, {'from_mo': 34, 'to_mo': 36, 'from_label': 'HOMO', 'to_label': 'LUMO+1', 'weight_percent': 43.3}], 'character_type': 'Valence ($\\pi \to \\pi^*$)', 'is_charge_transfer': False}, {'state': 2, 'dominant_transitions': [{'from_mo': 34, 'to_mo': 35, 'from_label': 'HOMO', 'to_label': 'LUMO', 'weight_percent': 90.7}, {'from_mo': 32, 'to_mo': 35, 'from_label': 'HOMO-2', 'to_label': 'LUMO', 'weight_percent': 5.9}], 'character_type': 'Valence ($\\pi \to \\pi^*$)', 'is_charge_transfer': False}, {'state': 3, 'dominant_transitions': [{'from_mo': 32, 'to_mo': 35, 'from_label': 'HOMO-2', 'to_label': 'LUMO', 'weight_percent': 88.8}], 'character_type': 'Valence ($\\pi \to \\pi^*$)', 'is_charge_transfer': False}, {'state': 4, 'dominant_transitions': [{'from_mo': 34, 'to_mo': 37, 'from_label': 'HOMO', 'to_label': 'LUMO+2', 'weight_percent': 92.2}], 'character_type': 'Valence ($\\pi \to \\pi^*$)', 'is_charge_transfer': False}, {'state': 5, 'dominant_transitions': [{'from_mo': 34, 'to_mo': 36, 'from_label': 'HOMO', 'to_label': 'LUMO+1', 'weight_percent': 47.0}, {'from_mo': 33, 'to_mo': 35, 'from_label': 'HOMO-1', 'to_label': 'LUMO', 'weight_percent': 34.4}, {'from_mo': 31, 'to_mo': 36, 'from_label': 'HOMO-3', 'to_label': 'LUMO+1', 'weight_percent': 7.6}], 'character_type': 'Valence ($\\pi \to \\pi^*$)', 'is_charge_transfer': False}]"

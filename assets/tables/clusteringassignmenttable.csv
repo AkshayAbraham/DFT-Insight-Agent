@@ -1,0 +1,7 @@
+﻿,file_name,cluster_id,homo_lumo_gap_ev,dipole_moment_debye
+0,dvb_nmr.log,0,5.1840409658755,0
+1,dvb_td.log,0,5.8953465710825,0.12380767342939614
+2,Mo4OCl4-sp.log,0,3.110261311214999,1.0673000046847183
+3,Trp_polar.log,1,12.8777879749125,2.7110047768309076
+4,water_ccsdt.log,1,26.094629807548,1.6735
+5,water_mp2.log,1,,1.5994

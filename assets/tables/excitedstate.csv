@@ -1,0 +1,10 @@
+﻿,State,Character,Transition,Contribution (%)
+0,1,Valence ($\pi 	o \pi^*$),HOMO-1 → LUMO,55.3
+1,1,Valence ($\pi 	o \pi^*$),HOMO → LUMO+1,43.3
+2,2,Valence ($\pi 	o \pi^*$),HOMO → LUMO,90.7
+3,2,Valence ($\pi 	o \pi^*$),HOMO-2 → LUMO,5.9
+4,3,Valence ($\pi 	o \pi^*$),HOMO-2 → LUMO,88.8
+5,4,Valence ($\pi 	o \pi^*$),HOMO → LUMO+2,92.2
+6,5,Valence ($\pi 	o \pi^*$),HOMO → LUMO+1,47
+7,5,Valence ($\pi 	o \pi^*$),HOMO-1 → LUMO,34.4
+8,5,Valence ($\pi 	o \pi^*$),HOMO-3 → LUMO+1,7.6
